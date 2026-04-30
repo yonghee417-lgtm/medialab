@@ -1,0 +1,33 @@
+{
+  "name": "medialab",
+  "private": true,
+  "version": "1.0.0",
+  "description": "미디어랩 - 가볍지만 강력한 음악·영상 재생기",
+  "main": "out/main/index.js",
+  "author": "MediaLab",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "pack:win": "electron-vite build && electron-builder --win --x64",
+    "pack:mac": "electron-vite build && electron-builder --mac",
+    "pack:all": "electron-vite build && electron-builder -mw"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.2",
+    "electron": "^33.0.2",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^2.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.9"
+  }
+}

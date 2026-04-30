@@ -42,6 +42,11 @@ const api = {
     ipcRenderer.on('window:fullscreen', listener)
     return () => ipcRenderer.removeListener('window:fullscreen', listener)
   },
+  onOpenFiles: (cb: (paths: string[]) => void): (() => void) => {
+    const listener = (_: unknown, paths: string[]) => cb(paths)
+    ipcRenderer.on('app:open-files', listener)
+    return () => ipcRenderer.removeListener('app:open-files', listener)
+  },
 
   toMediaUrl: (p: string): string => {
     const norm = p.replace(/\\/g, '/')

@@ -182,6 +182,36 @@ export default function App() {
     addItems(newItems)
   }, [addItems])
 
+  // Files opened from OS (double-click on associated file, or "Open With")
+  useEffect(() => {
+    return window.medialab.onOpenFiles((paths) => {
+      if (!paths || paths.length === 0) return
+      const VIDEO = new Set(['.mp4', '.m4v', '.mkv', '.webm', '.mov', '.avi', '.wmv', '.flv', '.ts', '.mpg', '.mpeg', '.3gp', '.ogv'])
+      const AUDIO = new Set(['.mp3', '.flac', '.m4a', '.wav', '.ogg', '.opus', '.aac', '.wma', '.aiff', '.aif', '.ape', '.alac'])
+      const newItems: MediaItem[] = []
+      for (const p of paths) {
+        const ext = '.' + (p.split('.').pop() ?? '').toLowerCase()
+        const name = p.split(/[\\/]/).pop() || p
+        if (VIDEO.has(ext)) newItems.push({ path: p, name, kind: 'video', size: 0 })
+        else if (AUDIO.has(ext)) newItems.push({ path: p, name, kind: 'audio', size: 0 })
+      }
+      if (newItems.length === 0) return
+      // Add and start playing the first new item
+      setItems((prev) => {
+        const seen = new Set(prev.map((i) => i.path))
+        const additions = newItems.filter((i) => !seen.has(i.path))
+        const next = [...prev, ...additions]
+        // Find playing target — first of newly added that exists in next
+        const firstAddedPath = (additions[0] ?? newItems[0]).path
+        const targetIdx = next.findIndex((i) => i.path === firstAddedPath)
+        if (targetIdx >= 0) setCurrentIndex(targetIdx)
+        return next
+      })
+      // Skip splash on file-open launch so playback starts immediately
+      setSplashDone(true)
+    })
+  }, [])
+
   const handlePickSubtitle = useCallback(async () => {
     const p = await window.medialab.pickSubtitle()
     if (p) await playerRef.current?.loadSubtitleFromPath(p)

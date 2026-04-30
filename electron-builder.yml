@@ -19,10 +19,13 @@ win:
   icon: assets/Logo.png
 nsis:
   oneClick: false
+  perMachine: true
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: MediaLab
+  include: build/installer.nsh
+  warningsAsErrors: false
 mac:
   target:
     - target: dmg

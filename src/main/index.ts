@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell, Menu, screen } from 'electron'
 import path from 'path'
+import { existsSync } from 'fs'
 import { store } from './store'
 import {
   pickFiles,
@@ -9,6 +10,7 @@ import {
   readFileText
 } from './files'
 import { listPlaylists, savePlaylist, loadPlaylist } from './playlist'
+import { AUDIO_EXTS, VIDEO_EXTS } from './formats'
 
 const PLAYER_W = 920
 const PLAYER_H = 580
@@ -17,6 +19,42 @@ const PANEL_W = 340
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
 
 let win: BrowserWindow | null = null
+
+// ---- Single instance + file open via OS ("Open with" / double-click) ----
+const gotInstanceLock = app.requestSingleInstanceLock()
+if (!gotInstanceLock) {
+  app.quit()
+}
+
+let pendingFiles: string[] = []
+let rendererReady = false
+
+function isMediaPath(p: string): boolean {
+  const ext = path.extname(p).toLowerCase()
+  return AUDIO_EXTS.has(ext) || VIDEO_EXTS.has(ext)
+}
+
+function extractMediaFromArgv(argv: string[]): string[] {
+  // In packaged app: argv[0] = MediaLab.exe, argv[1+] = passed paths.
+  // In dev (electron-vite): argv contains many internal flags; skip them.
+  const out: string[] = []
+  for (let i = 1; i < argv.length; i++) {
+    const a = argv[i]
+    if (!a || a.startsWith('-') || a === '.') continue
+    if (!isMediaPath(a)) continue
+    if (existsSync(a)) out.push(path.resolve(a))
+  }
+  return out
+}
+
+function deliverFiles(paths: string[]) {
+  if (paths.length === 0) return
+  if (rendererReady && win) {
+    win.webContents.send('app:open-files', paths)
+  } else {
+    pendingFiles.push(...paths)
+  }
+}
 
 function createWindow() {
   const saved = store.get('windowBounds')
@@ -63,6 +101,14 @@ function createWindow() {
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
+  })
+
+  win.webContents.on('did-finish-load', () => {
+    rendererReady = true
+    if (pendingFiles.length > 0) {
+      win?.webContents.send('app:open-files', pendingFiles)
+      pendingFiles = []
+    }
   })
 
   if (isDev) {
@@ -146,6 +192,25 @@ function registerIpc() {
     win.setContentSize(finalW, finalH)
   })
 }
+
+// Initial argv (when launched fresh by OS via file association)
+pendingFiles.push(...extractMediaFromArgv(process.argv))
+
+// Second instance: forward the file path to the running window
+app.on('second-instance', (_e, argv) => {
+  const files = extractMediaFromArgv(argv)
+  if (files.length > 0) deliverFiles(files)
+  if (win) {
+    if (win.isMinimized()) win.restore()
+    win.focus()
+  }
+})
+
+// macOS: "Open With" goes through this event instead of argv
+app.on('open-file', (e, p) => {
+  e.preventDefault()
+  if (isMediaPath(p) && existsSync(p)) deliverFiles([path.resolve(p)])
+})
 
 app.whenReady().then(() => {
   registerIpc()

@@ -746,3 +746,55 @@ input, textarea {
   color: #c8ccd4;
   border: 1px solid #2a2d35;
 }
+
+/* ---------- 배너 광고 (재생목록 하단) ---------- */
+/* .playlist 가 flex column 이므로 .playlist-banner 를 마지막 자식으로 두고
+   flex-shrink:0 으로 고정 → 본문(.playlist-body flex:1)만 스크롤됨 */
+.playlist-banner {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  border-top: 1px solid #1f2129;
+  background: rgba(10, 11, 14, 0.4);
+}
+
+.banner-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 6px;
+  background: #14161c;
+  border: 1px dashed #2a2d35;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+.banner-slot.has-banner {
+  border-style: solid;
+  border-color: #1f2129;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.banner-slot.has-banner:hover {
+  opacity: 0.9;
+}
+.banner-slot img {
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.banner-placeholder {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8b8b95;
+}
+.banner-placeholder-sub {
+  font-size: 10px;
+  color: #5a5a63;
+  margin-top: 2px;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+}

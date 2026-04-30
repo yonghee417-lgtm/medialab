@@ -48,6 +48,10 @@ const api = {
     return () => ipcRenderer.removeListener('app:open-files', listener)
   },
 
+  // 외부 URL 열기 (배너 클릭 등) — 사용자 기본 브라우저로
+  openExternalUrl: (url: string): Promise<boolean> =>
+    ipcRenderer.invoke('shell:openExternal', url),
+
   toMediaUrl: (p: string): string => {
     const norm = p.replace(/\\/g, '/')
     // file:/// for absolute paths. encodeURIComponent each segment to handle

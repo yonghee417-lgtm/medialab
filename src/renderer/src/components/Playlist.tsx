@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import type { MediaItem } from '../types'
 import { formatBytes } from '../lib/format'
+import BannerSlot from './BannerSlot'
 
 interface Props {
   items: MediaItem[]
@@ -121,6 +122,11 @@ export default function Playlist(props: Props) {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* 재생목록 하단 배너 광고 (300×60) — 항상 하단 고정 */}
+      <div className="playlist-banner">
+        <BannerSlot slotId="panel-bottom" width={300} height={60} label="사이드하단배너" />
       </div>
 
       {dragging && <div className="drop-overlay">여기에 놓아 추가</div>}

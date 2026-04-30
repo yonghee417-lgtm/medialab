@@ -119,6 +119,14 @@ function createWindow() {
 }
 
 function registerIpc() {
+  // 외부 URL 열기 (배너 광고 클릭 등) — http(s)만 허용
+  ipcMain.handle('shell:openExternal', async (_e, url: string) => {
+    if (typeof url !== 'string') return false
+    if (!/^https?:\/\//i.test(url)) return false
+    await shell.openExternal(url)
+    return true
+  })
+
   ipcMain.handle('files:pick', async () => {
     if (!win) return []
     return pickFiles(win)
